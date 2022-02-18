@@ -76,7 +76,6 @@ contract Freight {
     event Log(address indexed sender, string message);
 
     constructor() {
-        owner = payable(msg.sender);
         freight_situation = FreightSituation.Auction;
         
         is_advance_taken = false;
@@ -85,15 +84,20 @@ contract Freight {
     }
 
     // modifier for owner-only
-    modifier onlyowner {
-        require (msg.sender == owner, ONLY_OWNER);
+    modifier onlyowner(address sender) {
+        require (sender == owner, ONLY_OWNER);
         _;
     }
 
     // modifier for winning-only
-    modifier onlywinner {
-        require (msg.sender == winning_offer.address_offer, ONLY_WINNER_OFFER);
+    modifier onlywinner(address sender) {
+        require (sender == winning_offer.address_offer, ONLY_WINNER_OFFER);
         _;
+    }
+
+    function setOwner(address owner_) public {
+        require(owner == address(0));
+        owner = payable(owner_);
     }
 
     /* ------------------------- ONLY OWNER FUNCTIONS ------------------------- */
@@ -101,8 +105,8 @@ contract Freight {
     function setOrigin(
         string memory country_, string memory state_, string memory city_,
         string memory street_, string memory district_, string memory zipcode_,
-        string memory number_
-    ) public onlyowner {
+        string memory number_, address sender
+    ) public onlyowner(sender) {
         freight_details.origin.country = country_;
         freight_details.origin.state = state_;
         freight_details.origin.city = city_;
@@ -117,8 +121,8 @@ contract Freight {
     function setDestination(
         string memory country_, string memory state_, string memory city_,
         string memory street_, string memory district_, string memory zipcode_,
-        string memory number_
-    ) public onlyowner {
+        string memory number_, address sender
+    ) public onlyowner(sender) {
         freight_details.destination.country = country_;
         freight_details.destination.state = state_;
         freight_details.destination.city = city_;
@@ -131,21 +135,21 @@ contract Freight {
     }
 
     function setDates(
-        uint256 date_limit_get_load_, uint256 date_limit_delivery_
-    ) public onlyowner {
+        uint256 date_limit_get_load_, uint256 date_limit_delivery_, address sender
+    ) public onlyowner(sender) {
         freight_details.date_limit_get_load = date_limit_get_load_;
         freight_details.date_limit_delivery = date_limit_delivery_;
     }
 
     function setValues(
-        uint estipulated_value_, uint fine_delivery_late_, uint guarantee_value_
-    ) public onlyowner {
+        uint estipulated_value_, uint fine_delivery_late_, uint guarantee_value_, address sender
+    ) public onlyowner(sender) {
         freight_details.estipulated_value = estipulated_value_;
         freight_details.fine_delivery_late = fine_delivery_late_;
         freight_details.guarantee_value = guarantee_value_;
     }
 
-    function setWinningOffer(uint i) public onlyowner {
+    function setWinningOffer(uint i, address sender) public onlyowner(sender) {
         require(freight_situation == FreightSituation.Auction, FREIGHT_SITUATION_DIFFERENT);
         
         // selecting the winner offer
@@ -159,14 +163,14 @@ contract Freight {
 
     /* ------------------------- OFFERS ------------------------- */
 
-    function addOffer(
-        uint value_, uint advance_money_
+    function createOffer(
+        uint value_, uint advance_money_, address sender
     ) public {
         require(freight_situation == FreightSituation.Auction, FREIGHT_SITUATION_DIFFERENT); // the situation must be as Auction
-        require(msg.sender != owner, OWNER_CANT); // owner can't put a offer
+        require(sender != owner, OWNER_CANT); // owner can't put a offer
 
         offers.push(Offer({
-            address_offer: payable(msg.sender),
+            address_offer: payable(sender),
             value: value_,
             advance_money: advance_money_
         }));
@@ -175,7 +179,7 @@ contract Freight {
     /* ------------------------- INTERACTIONS ON THE CARRIAGE ------------------------- */
 
     // winning offer trasnporter must accept the offer
-    function acceptOffer() public payable onlywinner {
+    function acceptOffer(address sender) public payable onlywinner(sender) {
         require(msg.value == freight_details.guarantee_value, VALUES_DIFFER); // check if its the exact amount
         require(freight_situation == FreightSituation.WaitingConfirmationTransporter, FREIGHT_SITUATION_DIFFERENT);
 
@@ -185,7 +189,7 @@ contract Freight {
     }
 
     // the owner confirms the transporter have arrived to pick up the load
-    function pickUpLoad() public onlyowner payable {
+    function pickUpLoad(address sender) public onlyowner(sender) payable {
         require(freight_situation == FreightSituation.WaitingPickUpLoad, FREIGHT_SITUATION_DIFFERENT);
         require(msg.value == winning_offer.value, VALUES_DIFFER); // owner must put its money into the contract
 
@@ -195,7 +199,7 @@ contract Freight {
     }
 
     // the transporter can withdraw the advance money, put it into the contract by the owner
-    function withdrawAdvanceMoney() public onlywinner {
+    function withdrawAdvanceMoney(address sender) public onlywinner(sender) {
         require(!is_advance_taken, "The account had already withdrawn the advance money");
 
         // send advance money from the contract to the transporter account
@@ -210,7 +214,7 @@ contract Freight {
     /* ------------------------- ACTIONS THE TRANSPORTER CAN PERFORM (ON THE CARRIAGE) ------------------------- */
 
     // set situation to stopped
-    function stopCarriage() public onlywinner {
+    function stopCarriage(address sender) public onlywinner(sender) {
         require(freight_situation >= FreightSituation.OnCarriage &&
                 freight_situation < FreightSituation.Delivered, FREIGHT_SITUATION_DIFFERENT);
 
@@ -220,7 +224,7 @@ contract Freight {
     }
 
     // set situation to on carriage
-    function onCarriage() public onlywinner {
+    function onCarriage(address sender) public onlywinner(sender) {
         require(freight_situation >= FreightSituation.OnCarriage &&
                 freight_situation < FreightSituation.Delivered, FREIGHT_SITUATION_DIFFERENT);
         
@@ -230,7 +234,7 @@ contract Freight {
     }
 
     // the transporter had delivered the load into the destination
-    function deliver() public onlywinner {
+    function deliver(address sender) public onlywinner(sender) {
         require(freight_situation == FreightSituation.OnCarriage);
 
         if (block.timestamp <= freight_details.date_limit_delivery) {
@@ -244,7 +248,7 @@ contract Freight {
     }
 
     // the transporter, after delivering the load, can withdraw the whole money of the contract
-    function withdrawWholeMoney() public onlywinner {
+    function withdrawWholeMoney(address sender) public onlywinner(sender) {
         require(freight_situation == FreightSituation.Delivered ||
                 freight_situation == FreightSituation.DeliveredLate, FREIGHT_SITUATION_DIFFERENT);
         require(!is_whole_money_taken, WHOLE_MONEY_TAKEN);
@@ -262,7 +266,7 @@ contract Freight {
 
     // the owner can say the load wasn't delivered (only after the time is higher than the delivery time)
     // than, change the situation and gets back the whole amount of money of the contract
-    function cancelFreight() public onlyowner {
+    function cancelFreight(address sender) public onlyowner(sender) {
         require(freight_situation == FreightSituation.OnCarriage ||
                 freight_situation == FreightSituation.Stopped, FREIGHT_SITUATION_DIFFERENT);
         require(block.timestamp > freight_details.date_limit_delivery);
@@ -279,7 +283,7 @@ contract Freight {
     }
 
     // if the transporter had delivered the load in late time, the owner can get its fine of delivery late
-    function getDeliveryLateFine() public onlyowner {
+    function getDeliveryLateFine(address sender) public onlyowner(sender) {
         require(freight_situation == FreightSituation.DeliveredLate, FREIGHT_SITUATION_DIFFERENT);
         require(!is_delivery_late_taken, "The delivery late fine had alrady been taken");
 
@@ -346,38 +350,5 @@ contract Freight {
 
     function getContractAddress() public view returns (address) {
         return address(this);
-    }
-}
-
-contract FreightFactory {
-    mapping(address => Freight[]) private freights;
-
-    function getFreightsAddress(address account) public view returns (
-        Freight[] memory
-    ) {
-        Freight[] memory freights_address = freights[account];
-        require(freights_address.length != 0);
-
-        return (freights_address);
-    }
-
-    function insertFreight() public {
-        freights[msg.sender].push(new Freight());
-    }
-
-    function testInsertValues(
-        uint estipulated_value_, uint fine_delivery_late_, uint guarantee_value_, uint index
-    ) public {
-        freights[msg.sender][index].setValues(estipulated_value_, fine_delivery_late_, guarantee_value_);
-    }
-
-    function testGetValues(uint index) public view returns (
-        uint, uint, uint
-    ) {
-        return freights[msg.sender][index].getValues();
-    }
-
-    function getContractAddress(uint index) public view returns (address) {
-        return address(freights[msg.sender][index]);
     }
 }
