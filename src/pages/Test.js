@@ -1,14 +1,13 @@
-import { useEffect, useState, setState } from 'react'
+import { useEffect, useState } from 'react'
 import { ethers } from 'ethers';
 
-import './Home.css';
+import '../utils/utils';
 
-import contractJson from '../../contracts/Freight.json';
-// const contractAddress = "0x4f354363Be8AB99A288E48B018c0dA741c8cb360";
+import contractJson from '../contracts/Freight.json';
 const abi = contractJson.abi;
 const bytecode = contractJson.bytecode;
 
-function Home() {
+function Test() {
   const [currentAccount, setCurrentAccount] = useState(null);
   const [contractAddress, setContractAddress] = useState(null);
   const [values, setValues] = useState(null);
@@ -173,4 +172,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Test;

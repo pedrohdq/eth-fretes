@@ -20,7 +20,7 @@ contract FreightFactory is CloneFactory {
         master_contract = address(master);
     }
 
-    /* ------------------------- CREATE FREIGHT + OFFER ------------------------- */
+    /* ------------------------- CREATE FREIGHT ------------------------- */
 
     function createFreight() public {
         // create new freight
@@ -37,6 +37,8 @@ contract FreightFactory is CloneFactory {
         freights.push(freight);
     }
 
+    /* ------------------------- OFFERS ------------------------- */
+
     function createOffer(uint value_, uint advance_money_, address contract_) public {
         Freight freight = freights_contract[contract_];
         freight.createOffer(value_, advance_money_, msg.sender);
@@ -45,39 +47,6 @@ contract FreightFactory is CloneFactory {
         freights_offer[msg.sender].push(freight);
     }
 
-    /* ------------------------- ONLY OWNER FUNCTIONS ------------------------- */
-
-    function setOrigin(
-        string memory country_, string memory state_, string memory city_,
-        string memory street_, string memory district_, string memory zipcode_,
-        string memory number_, address contract_
-    ) public {
-        Freight freight = freights_contract[contract_];
-        freight.setOrigin(country_, state_, city_, street_, district_, zipcode_, number_, msg.sender);
-    }
-
-    function setDestination(
-        string memory country_, string memory state_, string memory city_,
-        string memory street_, string memory district_, string memory zipcode_,
-        string memory number_, address contract_
-    ) public {
-        Freight freight = freights_contract[contract_];
-        freight.setDestination(country_, state_, city_, street_, district_, zipcode_, number_, msg.sender);
-    }
-
-    function setDates(
-        uint256 date_limit_get_load_, uint256 date_limit_delivery_, address contract_
-    ) public {
-        Freight freight = freights_contract[contract_];
-        freight.setDates(date_limit_get_load_, date_limit_delivery_, msg.sender);
-    }
-
-    function setValues(
-        uint estipulated_value_, uint fine_delivery_late_, uint guarantee_value_, address contract_
-    ) public {
-        Freight freight = freights_contract[contract_];
-        freight.setValues(estipulated_value_, fine_delivery_late_, guarantee_value_, msg.sender);
-    }
 
     /* ------------------------- GETTERS ------------------------- */
 
@@ -85,11 +54,15 @@ contract FreightFactory is CloneFactory {
         return (freights);
     }
 
+    function getFreight(address address_freight_) view public returns (Freight) {
+        return (freights_contract[address_freight_]);
+    }
+
     function getFreightsByOwner(address owner_) view public returns (Freight[] memory) {
         return (freights_owner[owner_]);
     }
 
-    function getFreightAddress(address address_freight) view public returns (Freight) {
-        return (freights_contract[address_freight]);
+    function getFreightsByOffer(address offer_) view public returns (Freight[] memory) {
+        return (freights_offer[offer_]);
     }
 }

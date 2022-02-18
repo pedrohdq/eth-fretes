@@ -178,7 +178,7 @@ contract Freight {
 
     /* ------------------------- INTERACTIONS ON THE CARRIAGE ------------------------- */
 
-    // winning offer trasnporter must accept the offer
+    // winning offer transporter must accept the offer
     function acceptOffer(address sender) public payable onlywinner(sender) {
         require(msg.value == freight_details.guarantee_value, VALUES_DIFFER); // check if its the exact amount
         require(freight_situation == FreightSituation.WaitingConfirmationTransporter, FREIGHT_SITUATION_DIFFERENT);
