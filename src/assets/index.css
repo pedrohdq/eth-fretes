@@ -58,3 +58,12 @@ body {
 .blue:hover {
   background-color: rgb(102, 102, 255) !important;
 }
+
+.lightblue {
+  background-color: aliceblue !important;
+  color: black !important;
+}
+
+.lightblue:hover {
+  background-color: rgb(175, 199, 219) !important;
+}

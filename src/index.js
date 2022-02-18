@@ -12,6 +12,7 @@ import Layout from './pages/Layout'
 import Home from './pages/Home';
 import About from './pages/About';
 import Freights from './pages/Freights';
+import AddFreight from './pages/AddFreight';
 
 // Global CSS
 import './assets/index.css';
@@ -25,6 +26,7 @@ render(
           <Route index element={ <Home /> } />
           <Route path="/about" element={ <About /> } />
           <Route path="/freights" element={ <Freights /> } />
+          <Route path="/add-freight" element={ <AddFreight /> } />
         </Route>
       </Routes>
     </BrowserRouter>,

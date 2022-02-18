@@ -1,4 +1,5 @@
 import { Outlet, Link } from "react-router-dom";
+import ConnectWallet from '../components/ConnectWallet';
 
 function Layout() {
     return (
@@ -6,7 +7,7 @@ function Layout() {
             <ul className="nav">
                 <li><Link to="/" className="button">Home</Link></li>
                 <li><Link to="/about" className="button">About</Link></li>
-                <li className="button">Connect wallet</li>
+                <ConnectWallet />
             </ul>
 
             <Outlet />

@@ -1,8 +1,8 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { increment, decrement } from '../store/modules/web3';
+import { increment, decrement, increaseByAmount } from '../store/modules/counter';
 
 function About() {
-    const count = useSelector((state) => state.web3.value);
+    const count = useSelector((state) => state.counter.value);
     const dispatch = useDispatch();
 
     return (
@@ -26,6 +26,13 @@ function About() {
                     onClick={() => dispatch(decrement())}
                     >
                     Decrement
+                </button>
+
+                <button
+                    aria-label="Increment 2 value"
+                    onClick={() => dispatch(increaseByAmount(2))}
+                    >
+                    Increment 2
                 </button>
             </div>
         </div>
