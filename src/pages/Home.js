@@ -1,6 +1,23 @@
+import { useEffect } from 'react';
+import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 
+import { Errors, Success } from '../utils/utils';
+
 function Home() {
+    const { state } = useLocation();
+
+    useEffect(() => {
+        // if there is any error passed as paremeter, show a alert saying it
+        // same for success alert
+        if (state && state.error)
+            alert(Errors[state.error]);
+
+        else if (state && state.success) {
+            alert(Success[state.success]);
+        }
+    });
+
     return (
         <div>
             <h1>Descentralized Freights</h1>

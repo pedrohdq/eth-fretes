@@ -65,4 +65,8 @@ contract FreightFactory is CloneFactory {
     function getFreightsByOffer(address offer_) view public returns (Freight[] memory) {
         return (freights_offer[offer_]);
     }
+
+    function getLastFreightOwner(address owner_) view public returns (Freight) {
+        return (freights_owner[owner_][freights_owner[owner_].length - 1]);
+    }
 }

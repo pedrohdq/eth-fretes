@@ -14,7 +14,7 @@ function ConnectWallet() {
         if (ethereum) {
             const accounts = await ethereum.request({ method: 'eth_accounts' });
 
-            if (accounts.length != 0) {
+            if (accounts.length !== 0) {
                 const account = accounts[0];
 
                 dispatch(setCurrentAccount(account));

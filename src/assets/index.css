@@ -41,12 +41,63 @@ body {
 .flex {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+}
+
+.flexVertical {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.flexLeft {
+  justify-content: left !important;
+}
+
+.flexRight {
+  justify-content: right !important;
+}
+
+h4 {
+  margin: 5px;
+}
+
+label {
+  text-align: left;
+}
+
+.input {
+  padding: 8px;
+  font-size: 16px;
+  color: rgb(87, 87, 87);
+  margin-right: 5px;
+}
+
+.inputUnit {
+  padding-right: 40px;
+  text-align: right;
+}
+.spanUnit {
+  margin-left: -40px;
+  margin-top: 9px;
+}
+
+.left {
+  text-align: left;
 }
 
 .box {
   border: 1px solid #a8a8a8;
   padding: 10px 20px 40px 20px;
   margin-right: 10px;
+}
+
+.marginTop {
+  margin-top: 15px;
+}
+
+.noMargin {
+  margin: 0;
 }
 
 /* colors */
@@ -66,4 +117,13 @@ body {
 
 .lightblue:hover {
   background-color: rgb(175, 199, 219) !important;
+}
+
+.primary {
+  background-color: rgb(21, 175, 202) !important;
+  color: white !important;
+}
+
+.primary:hover {
+  background-color: rgb(19, 131, 151) !important;
 }
