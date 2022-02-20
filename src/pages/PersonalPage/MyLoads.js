@@ -1,38 +1,37 @@
 import { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { appendFreight, setAddress, setFreights } from '../store/modules/freights';
 import { ethers } from 'ethers';
 
-import { addressFactory, FreightSituation, convertUnixDate } from '../utils/utils';
+import { addressFactory, FreightSituation, convertUnixDate } from '../../utils/utils';
+import contractFactory from '../../contracts/FreightFactory.json';
+import contractFreight from '../../contracts/Freight.json';
 
-import contractFactory from '../contracts/FreightFactory.json';
-import contractFreight from '../contracts/Freight.json';
-
-const abiFreight = contractFreight.abi;
 const abiFactory = contractFactory.abi;
+const abiFreight = contractFreight.abi;
 
-function Freights() {
-    // page states
+function MyLoads() {
+    const [addresses, setAddresses] = useState([]);
+    const [freights, setFreights] = useState([]);
     const [loaded, setLoaded] = useState(false);
-
-    // redux states
-    const addressFreights = useSelector((state) => state.freights.address);
-    const freightsAll = useSelector((state) => state.freights.freights);
-    const dispatch = useDispatch();
 
     const getAddress = async() => {
         const { ethereum } = window;
 
         if (ethereum) {
-            const provider = new ethers.providers.Web3Provider(ethereum);
-            const signer = provider.getSigner();
-            const freightFactory = new ethers.Contract(addressFactory, abiFactory, signer);
+            try {
+                const provider = new ethers.providers.Web3Provider(ethereum);
+                const signer = provider.getSigner();
+                const freightFactory = new ethers.Contract(addressFactory, abiFactory, signer);
+                const addressOwner = signer.getAddress();
 
-            const freights = await freightFactory.getFreights();
-            dispatch(setAddress(freights));
+                // get addresses of freights by owner
+                const addresses1 = await freightFactory.getFreightsByOwner(addressOwner);
+                setAddresses(addresses1);
 
-            getFreights();
+                getFreights();
+            } catch (error) {
+                console.log(error);
+            }
         }
     }
 
@@ -40,20 +39,26 @@ function Freights() {
         const { ethereum } = window;
     
         if (ethereum) {
-            const provider = new ethers.providers.Web3Provider(ethereum);
-            const signer = provider.getSigner();
-    
-            for (var i = 0; i < addressFreights.length; i++) {
-                const addressNow = addressFreights[i];
-    
-                // search each freight in the blockchain
-                const freightNow = new ethers.Contract(addressNow, abiFreight, signer);
-    
-                const freightDetails = await freightNow.getFreight();
-                dispatch(appendFreight(parseFreightDetails(addressNow, freightDetails)));
+            try {
+                const provider = new ethers.providers.Web3Provider(ethereum);
+                const signer = provider.getSigner();
+        
+                for (var i = 0; i < addresses.length; i++) {
+                    const addressNow = addresses[i];
+        
+                    // search each freight in the blockchain
+                    const freightNow = new ethers.Contract(addressNow, abiFreight, signer);
+        
+                    const freightDetails = await freightNow.getFreight();
+
+                    // appending to the array
+                    setFreights(oldArray => [...oldArray, parseFreightDetails(addressNow, freightDetails)])
+                }
+
+                setLoaded(true);
+            } catch (error) {
+                console.log(error);
             }
-            
-            setLoaded(true);
         }
     }
 
@@ -79,7 +84,7 @@ function Freights() {
     }
 
     const getFreightsResults = () => {
-        const listItems = freightsAll.map((el) => 
+        const listItems = freights.map((el) => 
             <tr key={el.address}>
                 <td>{ FreightSituation[el.situation] }</td>
                 <td>{ `${el.origin.country} - ${el.origin.state} - ${el.origin.city}` }</td>
@@ -90,10 +95,7 @@ function Freights() {
                 <td>{ el.fine_delivery_late }</td>
                 <td>{ el.guarantee_value }</td>
                 <td>
-                    {el.situation === 0 ?
-                        <Link to={`${el.address}/bid`}>Place bid</Link> :
-                        ""
-                    }
+                    <Link to={`/freights/${el.address}/bid`}>See bids</Link>
                 </td>
             </tr>
         )
@@ -119,24 +121,15 @@ function Freights() {
             </table>
         );
     }
-    
+
     useEffect(() => {
-        if (!loaded) {
-            if (addressFreights.length === 0) {
-                getAddress();
-            } else {
-                if (freightsAll.length === 0) {
-                    getFreights();
-                } else {
-                    setLoaded(true);
-                }
-            }
-        }
+        if(!loaded)
+            getAddress();
     });
 
     return (
         <div>
-            <h1>Freights</h1>
+            <h1>My loads</h1>
 
             {
                 loaded &&
@@ -146,4 +139,4 @@ function Freights() {
     );
 }
 
-export default Freights;
+export default MyLoads;

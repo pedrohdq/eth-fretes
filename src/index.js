@@ -13,6 +13,11 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Freights from './pages/Freights';
 import AddFreight from './pages/AddFreight';
+import Bid from './pages/Bid';
+
+// Personal pages
+import MyLoads from './pages/PersonalPage/MyLoads';
+import MyOffers from './pages/PersonalPage/MyOffers';
 
 // Global CSS
 import './assets/index.css';
@@ -27,6 +32,11 @@ render(
           <Route path="/about" element={ <About /> } />
           <Route path="/freights" element={ <Freights /> } />
           <Route path="/add-freight" element={ <AddFreight /> } />
+
+          <Route path="freights/:address/bid" element={ <Bid /> } />
+
+          <Route path="/my-loads" element={ <MyLoads /> } />
+          <Route path="/my-offers" element={ <MyOffers /> } />
         </Route>
       </Routes>
     </BrowserRouter>,

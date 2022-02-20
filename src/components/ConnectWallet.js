@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setCurrentAccount } from '../store/modules/web3';
 
+import { Link } from 'react-router-dom';
+
 function ConnectWallet() {
     const currentAccount = useSelector((state) => state.web3.currentAccount);
     const dispatch = useDispatch();
@@ -36,6 +38,16 @@ function ConnectWallet() {
         }
     }
 
+    const showLoggedButtons = () => {
+        return (
+            <span>
+                <li className="button lightblue">{ currentAccount }</li>
+                <li><Link to="my-loads" className='button'>My loads</Link></li>
+                <li><Link to="my-offers" className='button'>My offers</Link></li>
+            </span>
+        );
+    }
+
     // when component is mounted
     useEffect(() => {
         isWalletConnected();
@@ -46,7 +58,7 @@ function ConnectWallet() {
         {
             currentAccount === "" ?
                 <li className="button" onClick={connectWallet}>Connect wallet</li> :
-                <li className="button lightblue">{ currentAccount }</li>
+                showLoggedButtons()
         }
         </span>
     );

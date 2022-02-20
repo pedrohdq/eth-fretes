@@ -365,7 +365,7 @@ contract Freight {
         return (winning_offer);
     }
 
-    function getFreight() public view returns (FreightSituation, FreightDetails memory) {
-        return (freight_situation, freight_details);
+    function getFreight() public view returns (FreightSituation, FreightDetails memory, address) {
+        return (freight_situation, freight_details, owner);
     }
 }
