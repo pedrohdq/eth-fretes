@@ -21,7 +21,7 @@ function Bid() {
     const currentAccount = useSelector((state) => state.web3.currentAccount);
 
     const freight = freightsAll.find(el => el.address === address);
-    const isOwner = freight.owner.toLowerCase() == currentAccount.toLowerCase() ? true : false;
+    const isOwner = freight.owner.toLowerCase() === currentAccount.toLowerCase() ? true : false;
     const [winningOffer, setWinningOffer] = useState(null);
 
     const [loaded, setLoaded] = useState(false);
@@ -90,7 +90,7 @@ function Bid() {
     const showOffers = () => {
         const showOffers1 = offers.map((el, index) => 
             <tr key={el.address}>
-                <td>{ el.address }</td>
+                <td>{ el.address.toLowerCase() === currentAccount.toLowerCase() && <b>(YOU)</b> } { el.address }</td>
                 <td>{ el.value }</td>
                 <td>{ el.advance_money }</td>
 
@@ -153,7 +153,7 @@ function Bid() {
             await createOffer.wait();
 
             // if all gone, refresh page
-            navigate(`/freights/${address}/bid`);
+            navigate('/', { state: { success: "OfferBidCreated" } });
         }
     }
 

@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { ethers } from 'ethers';
+import { useNavigate } from 'react-router-dom';
+
+// import icons
+import { Icon } from '@mdi/react';
+import { mdiCashMultiple } from '@mdi/js';
+import { mdiCarPickup } from '@mdi/js';
 
 import { addressFactory, FreightSituation, convertUnixDate } from '../../utils/utils';
 import contractFactory from '../../contracts/FreightFactory.json';
@@ -10,6 +16,8 @@ const abiFactory = contractFactory.abi;
 const abiFreight = contractFreight.abi;
 
 function MyLoads() {
+    const navigate = useNavigate();
+
     const [addresses, setAddresses] = useState([]);
     const [freights, setFreights] = useState([]);
     const [loaded, setLoaded] = useState(false);
@@ -49,16 +57,39 @@ function MyLoads() {
                     // search each freight in the blockchain
                     const freightNow = new ethers.Contract(addressNow, abiFreight, signer);
         
-                    const freightDetails = await freightNow.getFreight();
+                    // get freightDetails
+                    let freightDetails = await freightNow.getFreight();
+                    freightDetails = parseFreightDetails(addressNow, freightDetails);
+
+                    // get winning offer
+                    let winningOffer = await freightNow.getWinningOffer();
+                    winningOffer = parseOffer(winningOffer);
+
+                    const dict = {
+                        details: freightDetails,
+                        winning_offer: winningOffer
+                    };
 
                     // appending to the array
-                    setFreights(oldArray => [...oldArray, parseFreightDetails(addressNow, freightDetails)])
+                    setFreights(oldArray => [...oldArray, dict])
                 }
 
                 setLoaded(true);
             } catch (error) {
                 console.log(error);
             }
+        }
+    }
+
+    const parseOffer = (offer_) => {
+        if (offer_ == null)
+            return null;
+        else {
+            return {
+                address: offer_[0],
+                value: ethers.utils.formatEther(offer_[1].toString()),
+                advance_money: ethers.utils.formatEther(offer_[2].toString())
+            };
         }
     }
 
@@ -84,18 +115,60 @@ function MyLoads() {
     }
 
     const getFreightsResults = () => {
+        // action buttons
+        const pickUpLoad = async(freight) => {
+            const { ethereum } = window;
+
+            try {
+                if (ethereum) {
+                    const provider = new ethers.providers.Web3Provider(ethereum);
+                    const signer = provider.getSigner();
+                    const freight1 = new ethers.Contract(freight.details.address, abiFreight, signer);
+
+                    // the value of advance money must be the advance money of the offer
+                    const options = { value: ethers.utils.parseEther(freight.winning_offer.value) };
+
+                    // pick up the load
+                    await freight1.pickUpLoad(options);
+
+                    // if all gone right, go to the main page with a success message
+                    navigate('/', { state: { success: "PickedUpLoad" } });
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        const getActionButtons = (freight) => {
+            switch (freight.details.situation) {
+                case 2:
+                    return (
+                        <div className="tooltip" onClick={() => pickUpLoad(freight)}>
+                            <Icon path={mdiCarPickup} size="30" />
+                            <span className="hint">Transporter picked up load (need {freight.winning_offer.advance_money}ETH)</span>
+                        </div>
+                    );
+                default:
+                    return;
+            }
+        }
+
         const listItems = freights.map((el) => 
-            <tr key={el.address}>
-                <td>{ FreightSituation[el.situation] }</td>
-                <td>{ `${el.origin.country} - ${el.origin.state} - ${el.origin.city}` }</td>
-                <td>{ `${el.destination.country} - ${el.destination.state} - ${el.destination.city}` }</td>
-                <td>{ convertUnixDate(el.date_limit_load) }</td>
-                <td>{ convertUnixDate(el.date_limit_delivery) }</td>
-                <td>{ el.estipulated_value }</td>
-                <td>{ el.fine_delivery_late }</td>
-                <td>{ el.guarantee_value }</td>
+            <tr key={el.details.address}>
+                <td>{ FreightSituation[el.details.situation] }</td>
+                <td>{ `${el.details.origin.country} - ${el.details.origin.state} - ${el.details.origin.city}` }</td>
+                <td>{ `${el.details.destination.country} - ${el.details.destination.state} - ${el.details.destination.city}` }</td>
+                <td>{ convertUnixDate(el.details.date_limit_load) }</td>
+                <td>{ convertUnixDate(el.details.date_limit_delivery) }</td>
+                <td>{ el.details.estipulated_value }</td>
+                <td>{ el.details.fine_delivery_late }</td>
+                <td>{ el.details.guarantee_value }</td>
                 <td>
-                    <Link to={`/freights/${el.address}/bid`}>See bids</Link>
+                    <Link to={`/freights/${el.details.address}/bid`} className="tooltip">
+                        <Icon path={mdiCashMultiple} size="30" color="black" />
+                        <span className="hint">See bids</span>
+                    </Link>
+                    { getActionButtons(el) }
                 </td>
             </tr>
         )

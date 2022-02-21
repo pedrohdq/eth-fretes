@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@mdi/js": "^6.5.95",
+    "@mdi/react": "^1.5.0",
     "@optionality.io/clone-factory": "^0.2.1",
     "@reduxjs/toolkit": "^1.7.2",
     "@testing-library/jest-dom": "^5.16.2",

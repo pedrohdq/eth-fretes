@@ -1,4 +1,4 @@
-export const addressFactory = "0x70d4b76389E1445065Cab445c50a164C2195abDf";
+export const addressFactory = "0x5dfAFE1e730F22A5ad9C0F0f38D6B0061439741d";
 
 export const Errors = {
     "NotConnected": "Not connected to the wallet. In order to access this page, you need to connect to your Metamask!"
@@ -6,7 +6,10 @@ export const Errors = {
 
 export const Success = {
     "FreightAdded": "Your freight had been added successfully!",
-    "SetWinningOffer": "Winning offer had been set!"
+    "OfferBidCreated": "Your offer had been added successfully!",
+    "SetWinningOffer": "Winning offer had been set!",
+    "OfferAccepted": "You have successfully accepted the offer!",
+    "PickedUpLoad": "You have confirmed the transporter had picked up the load"
 }
 
 export const FreightSituation = {

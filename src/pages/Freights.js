@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { appendFreight, setAddress, setFreights } from '../store/modules/freights';
+import { appendFreight, setAddress } from '../store/modules/freights';
 import { ethers } from 'ethers';
 
 import { addressFactory, FreightSituation, convertUnixDate } from '../utils/utils';

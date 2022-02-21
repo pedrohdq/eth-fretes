@@ -43,10 +43,10 @@ struct FreightDetails {
     uint guarantee_value; // guarantee value from the transporter, so it does not steal the load or something like that
 }
 
-struct WholeFreight {
-    FreightDetails freight_details;
-    Offer[] offers;
-    FreightSituation situation;
+struct Flags {
+    bool is_advance_taken;
+    bool is_whole_money_taken;
+    bool is_delivery_late_taken;
 }
 
 contract Freight {
@@ -60,9 +60,7 @@ contract Freight {
     FreightSituation freight_situation;
 
     // flags
-    bool is_advance_taken;
-    bool is_whole_money_taken;
-    bool is_delivery_late_taken;
+    Flags flags;
 
     // constants
     string constant ONLY_OWNER = "Only the owner of the contract can perform this action";
@@ -78,9 +76,10 @@ contract Freight {
     constructor() {
         freight_situation = FreightSituation.Auction;
         
-        is_advance_taken = false;
-        is_whole_money_taken = false;
-        is_delivery_late_taken = false;
+        // initialize the flags
+        flags.is_advance_taken = false;
+        flags.is_whole_money_taken = false;
+        flags.is_delivery_late_taken = false;
     }
 
     // modifier for owner-only
@@ -201,13 +200,13 @@ contract Freight {
 
     // the transporter can withdraw the advance money, put it into the contract by the owner
     function withdrawAdvanceMoney() public onlywinner() {
-        require(!is_advance_taken, "The account had already withdrawn the advance money");
+        require(!flags.is_advance_taken, "The account had already withdrawn the advance money");
 
         // send advance money from the contract to the transporter account
         winning_offer.address_offer.transfer(winning_offer.advance_money);
 
         // set flag that the advance money had already been taken
-        is_advance_taken = true;
+        flags.is_advance_taken = true;
 
         emit Log(msg.sender, "The transporter had withdrawn the advance money");
     }
@@ -252,7 +251,7 @@ contract Freight {
     function withdrawWholeMoney() public onlywinner() {
         require(freight_situation == FreightSituation.Delivered ||
                 freight_situation == FreightSituation.DeliveredLate, FREIGHT_SITUATION_DIFFERENT);
-        require(!is_whole_money_taken, WHOLE_MONEY_TAKEN);
+        require(!flags.is_whole_money_taken, WHOLE_MONEY_TAKEN);
 
         // transfer the whole amount of money (including the guarantee fee)
         if (freight_situation == FreightSituation.Delivered) {
@@ -262,7 +261,7 @@ contract Freight {
         }
 
         // set the flag
-        is_whole_money_taken = true;
+        flags.is_whole_money_taken = true;
     }
 
     // the owner can say the load wasn't delivered (only after the time is higher than the delivery time)
@@ -271,7 +270,7 @@ contract Freight {
         require(freight_situation == FreightSituation.OnCarriage ||
                 freight_situation == FreightSituation.Stopped, FREIGHT_SITUATION_DIFFERENT);
         require(block.timestamp > freight_details.date_limit_delivery);
-        require(!is_whole_money_taken, WHOLE_MONEY_TAKEN);
+        require(!flags.is_whole_money_taken, WHOLE_MONEY_TAKEN);
 
         // change the situation
         freight_situation = FreightSituation.NotDelivered;
@@ -280,19 +279,19 @@ contract Freight {
         owner.transfer(address(this).balance);
 
         // set the flag
-        is_whole_money_taken = true;
+        flags.is_whole_money_taken = true;
     }
 
     // if the transporter had delivered the load in late time, the owner can get its fine of delivery late
     function getDeliveryLateFine() public onlyowner() {
         require(freight_situation == FreightSituation.DeliveredLate, FREIGHT_SITUATION_DIFFERENT);
-        require(!is_delivery_late_taken, "The delivery late fine had alrady been taken");
+        require(!flags.is_delivery_late_taken, "The delivery late fine had alrady been taken");
 
         // transfer the fine to the owner
         owner.transfer(freight_details.fine_delivery_late);
 
         // set the flag
-        is_delivery_late_taken = true;
+        flags.is_delivery_late_taken = true;
     }
 
     /* ------------------------- GETTERS ------------------------- */
@@ -337,6 +336,10 @@ contract Freight {
         return (freight_situation);
     }
 
+    function getFlags() public view returns (Flags memory) {
+        return (flags);
+    }
+
     function getOffers() public view returns (Offer[] memory) {
         return (offers);
     }
@@ -365,7 +368,7 @@ contract Freight {
         return (winning_offer);
     }
 
-    function getFreight() public view returns (FreightSituation, FreightDetails memory, address) {
-        return (freight_situation, freight_details, owner);
+    function getFreight() public view returns (FreightSituation, FreightDetails memory, address, Flags memory) {
+        return (freight_situation, freight_details, owner, flags);
     }
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate, Link } from 'react-router-dom';
 import { ethers } from 'ethers';
 
 import { addressFactory, FreightSituation, convertUnixDate } from '../../utils/utils';
@@ -10,6 +11,8 @@ const abiFactory = contractFactory.abi;
 const abiFreight = contractFreight.abi;
 
 function MyOffers() {
+    const navigate = useNavigate();
+
     const [addresses, setAddresses] = useState([]);
     const [freights, setFreights] = useState([]);
     const [loaded, setLoaded] = useState(false);
@@ -109,6 +112,7 @@ function MyOffers() {
         const situation = freight[0];
         const freight_details = freight[1];
         const owner = freight[2];
+        const flags = freight[3];
     
         const details = {
             owner: owner,
@@ -120,7 +124,8 @@ function MyOffers() {
             date_limit_delivery: freight_details[3].toString(),
             estipulated_value: ethers.utils.formatEther(freight_details[4].toString()),
             fine_delivery_late: ethers.utils.formatEther(freight_details[5].toString()),
-            guarantee_value: ethers.utils.formatEther(freight_details[6].toString())
+            guarantee_value: ethers.utils.formatEther(freight_details[6].toString()),
+            flags: flags
         };
     
         return details;
@@ -142,7 +147,7 @@ function MyOffers() {
 
         const getSituationOffer = (freight, offer) => {
             if (freight.winning_offer) {
-                if (JSON.stringify(freight.winning_offer) == JSON.stringify(offer))
+                if (JSON.stringify(freight.winning_offer) === JSON.stringify(offer))
                     return `WON`;
                 else
                     return `LOST`;
@@ -163,20 +168,46 @@ function MyOffers() {
         }
 
         // action buttons
-        const acceptOffer = async() => {}
+        const acceptOffer = async(freight) => {
+            const { ethereum } = window;
+
+            try {
+                if (ethereum) {
+                    const provider = new ethers.providers.Web3Provider(ethereum);
+                    const signer = provider.getSigner();
+                    const freight1 = new ethers.Contract(freight.details.address, abiFreight, signer);
+
+                    // the value of the acceptOffer must be the guarantee_value of the freight
+                    const options = { value: ethers.utils.parseEther(freight.details.guarantee_value) };
+
+                    // accept offer
+                    await freight1.acceptOffer(options);
+
+                    // // if all gone right, go to the main page with a success message
+                    navigate('/', { state: { success: "OfferAccepted" } });
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
         const stopLoad = async() => {}
         const onCarriage = async() => {}
         const deliverLoad = async() => {}
 
         const getActionButtons = (freight) => {
-            if (freight.winning_offer.address.toLowerCase() === currentAccount.toLowerCase()) {
+            if (freight.winning_offer && freight.winning_offer.address.toLowerCase() === currentAccount.toLowerCase()) {
                 // it is the winner, make a swich/case for the situation
                 switch (freight.details.situation) {
                     case 1:
                         return (
-                            <span className='button orange' onClick={acceptOffer}>
-                                Accept offer
-                            </span>
+                            <div>
+                                <span className='button orange' onClick={() => acceptOffer(freight)}>
+                                    Accept offer
+                                </span>
+                                <br /><br />
+                                <small>You need to have { freight.details.guarantee_value }ETH</small>
+                            </div>
                         );
                     
                     case 2:
@@ -187,7 +218,7 @@ function MyOffers() {
                     case 3:
                         return (
                             <div className="flex">
-                                <span className='button orange' onClick={stopLoad}>
+                                <span className='button orange' style={{ marginRight: '10px' }} onClick={stopLoad}>
                                     Stop
                                 </span>
                                 <span className='button orange' onClick={deliverLoad}>
@@ -207,6 +238,10 @@ function MyOffers() {
                             <span>The load is not with you anymore</span>
                         );
                 }
+            } else {
+                return (
+                    <Link to={`/freights/${freight.details.address}/bid`}>See bids</Link>
+                );
             }
         }
 
@@ -216,6 +251,7 @@ function MyOffers() {
                 className="box"
             >
                 <h3>{ getResultOffer(el) }</h3>
+                <p>{ el.details.address }</p>
                 <p>Situation: { FreightSituation[el.details.situation] }</p>
                 <p>Origin: { `${el.details.origin.country} - ${el.details.origin.state} - ${el.details.origin.city}` }</p>
                 <p>Destination: { `${el.details.destination.country} - ${el.details.destination.state} - ${el.details.destination.city}` }</p>
