@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ethers } from 'ethers';
-import { useNavigate } from 'react-router-dom';
 
 // import icons
 import { Icon } from '@mdi/react';
