@@ -4,6 +4,7 @@ pragma solidity ^0.8.11;
 import "./CloneFactory.sol";
 import "./Freight.sol";
 
+// Smart contract FreightFactory
 contract FreightFactory is CloneFactory {
     // global variables
     Freight[] public freights; // all freights

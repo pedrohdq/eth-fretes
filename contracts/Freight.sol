@@ -3,6 +3,7 @@ pragma solidity ^0.8.11;
 
 /* ------------------------- STRUCTS AND ENUMS ------------------------- */
 
+// Enum to keep the situation organized
 enum FreightSituation {
     Auction,
     WaitingConfirmationTransporter,
@@ -15,6 +16,7 @@ enum FreightSituation {
     Returned
 }
 
+// Represents an address of the freight
 struct Address {
     string country;
     string state;
@@ -25,12 +27,14 @@ struct Address {
     string number;
 }
 
+// Represents one single offer, when the freight is in "Auction"
 struct Offer {
     address payable address_offer;
     uint value;
     uint advance_money;
 }
 
+// Freight details
 struct FreightDetails {
     Address origin;
     Address destination;
@@ -43,12 +47,14 @@ struct FreightDetails {
     uint guarantee_value; // guarantee value from the transporter, so it does not steal the load or something like that
 }
 
+// Freight flags (setting when each person take an specific action)
 struct Flags {
     bool is_advance_taken;
     bool is_whole_money_taken;
     bool is_delivery_late_taken;
 }
 
+// smart contract Freight
 contract Freight {
     /* ------------------------- INITIALIZERS ------------------------- */
 
@@ -283,7 +289,7 @@ contract Freight {
     }
 
     // if the transporter had delivered the load in late time, the owner can get its fine of delivery late
-    function getDeliveryLateFine() public onlyowner() {
+    function withdrawDeliveryLateFine() public onlyowner() {
         require(freight_situation == FreightSituation.DeliveredLate, FREIGHT_SITUATION_DIFFERENT);
         require(!flags.is_delivery_late_taken, "The delivery late fine had alrady been taken");
 
