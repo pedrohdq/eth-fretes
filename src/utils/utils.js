@@ -1,5 +1,3 @@
-export const addressFactory = "0x5dfAFE1e730F22A5ad9C0F0f38D6B0061439741d";
-
 export const Errors = {
     "NotConnected": "Not connected to the wallet. In order to access this page, you need to connect to your Metamask!"
 }

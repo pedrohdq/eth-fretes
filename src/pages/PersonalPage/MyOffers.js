@@ -3,7 +3,8 @@ import { useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { ethers } from 'ethers';
 
-import { addressFactory, FreightSituation, convertUnixDate } from '../../utils/utils';
+import { FreightSituation, convertUnixDate } from '../../utils/utils';
+import addressFactory from "../../utils/address";
 import contractFactory from '../../contracts/FreightFactory.json';
 import contractFreight from '../../contracts/Freight.json';
 

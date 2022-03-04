@@ -7,7 +7,8 @@ import { Icon } from '@mdi/react';
 import { mdiCashMultiple } from '@mdi/js';
 import { mdiCarPickup } from '@mdi/js';
 
-import { addressFactory, FreightSituation, convertUnixDate } from '../../utils/utils';
+import { FreightSituation, convertUnixDate } from '../../utils/utils';
+import addressFactory from "../../utils/address";
 import contractFactory from '../../contracts/FreightFactory.json';
 import contractFreight from '../../contracts/Freight.json';
 
@@ -144,7 +145,7 @@ function MyLoads() {
                     return (
                         <div className="tooltip" onClick={() => pickUpLoad(freight)}>
                             <Icon path={mdiCarPickup} size="30" />
-                            <span className="hint">Transporter picked up load (need {freight.winning_offer.advance_money}ETH)</span>
+                            <span className="hint">Transporter picked up load (need {freight.winning_offer.value}ETH)</span>
                         </div>
                     );
                 default:

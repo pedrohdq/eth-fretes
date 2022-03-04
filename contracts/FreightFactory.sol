@@ -9,7 +9,6 @@ contract FreightFactory is CloneFactory {
     // global variables
     Freight[] public freights; // all freights
     
-    mapping(address => Freight) freights_contract; // mapping freights by its contracts
     mapping(address => Freight[]) freights_owner; // mapping freights by owner
     mapping(address => Freight[]) freights_offer; // mapping who made offer to freights
 
@@ -28,9 +27,6 @@ contract FreightFactory is CloneFactory {
         Freight freight = Freight(createClone(master_contract));
         freight.setOwner(msg.sender);
 
-        // put into mapping by address
-        freights_contract[address(freight)] = freight;
-
         // put into mapping by owner
         freights_owner[msg.sender].push(freight);
 
@@ -41,7 +37,7 @@ contract FreightFactory is CloneFactory {
     /* ------------------------- OFFERS ------------------------- */
 
     function createOffer(uint value_, uint advance_money_, address contract_) public {
-        Freight freight = freights_contract[contract_];
+        Freight freight = Freight(contract_);
         freight.createOffer(value_, advance_money_, msg.sender);
 
         // put into mapping by who made offers
@@ -53,10 +49,6 @@ contract FreightFactory is CloneFactory {
 
     function getFreights() view public returns (Freight[] memory) {
         return (freights);
-    }
-
-    function getFreight(address address_freight_) view public returns (Freight) {
-        return (freights_contract[address_freight_]);
     }
 
     function getFreightsByOwner(address owner_) view public returns (Freight[] memory) {

@@ -7,7 +7,7 @@ import Place from "../components/AddFreight/Place";
 import Dates from "../components/AddFreight/Dates";
 import Values from "../components/AddFreight/Values";
 
-import { addressFactory } from "../utils/utils";
+import addressFactory from "../utils/address";
 import contractFactory from "../contracts/FreightFactory.json";
 import contractFreight from "../contracts/Freight.json";
 

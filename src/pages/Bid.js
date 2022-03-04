@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-import { addressFactory, FreightSituation } from '../utils/utils';
+import { FreightSituation } from '../utils/utils';
+import addressFactory from '../utils/address';
 import { ethers } from 'ethers';
 
 import MakeBid from '../components/Bid/MakeBid';
