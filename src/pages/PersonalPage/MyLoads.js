@@ -97,6 +97,7 @@ function MyLoads() {
         const situation = freight[0];
         const freight_details = freight[1];
         const owner = freight[2];
+        const flags = freight[3];
     
         const details = {
             owner: owner,
@@ -108,7 +109,12 @@ function MyLoads() {
             date_limit_delivery: freight_details[3].toString(),
             estipulated_value: ethers.utils.formatEther(freight_details[4].toString()),
             fine_delivery_late: ethers.utils.formatEther(freight_details[5].toString()),
-            guarantee_value: ethers.utils.formatEther(freight_details[6].toString())
+            guarantee_value: ethers.utils.formatEther(freight_details[6].toString()),
+            flags: {
+                is_advance_taken: flags[0],
+                is_whole_money_taken: flags[1],
+                is_delivery_late_taken: flags[2]
+            }
         };
     
         return details;
@@ -139,6 +145,26 @@ function MyLoads() {
             }
         }
 
+        const takeLateFine = async(freight) => {
+            const { ethereum } = window;
+
+            try {
+                if (ethereum) {
+                    const provider = new ethers.providers.Web3Provider(ethereum);
+                    const signer = provider.getSigner();
+                    const freight1 = new ethers.Contract(freight.details.address, abiFreight, signer);
+
+                    // pick up the load
+                    await freight1.withdrawDeliveryLateFine();
+
+                    setFreights([]);
+                    getFreights();
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
         const getActionButtons = (freight) => {
             switch (freight.details.situation) {
                 case 2:
@@ -148,13 +174,24 @@ function MyLoads() {
                             <span className="hint">Transporter picked up load (need {freight.winning_offer.value}ETH)</span>
                         </div>
                     );
+                case 6:
+                    return (
+                        <div>
+                            { freight.details.flags.is_delivery_late_taken ? 
+                                <div className="tooltip" onClick={() => takeLateFine(freight)}>
+                                    <Icon path={mdiCarPickup} size="30" />
+                                    <span className="hint">Take late fine ({freight.details.fine_delivery_late}ETH)</span>
+                                </div> :
+                            "" }
+                        </div>
+                    );
                 default:
                     return;
             }
         }
 
         const listItems = freights.map((el) => 
-            <tr key={el.details.address}>
+            <tr key={el.details.address} className={ el.details.situation === 5 || el.details.situation === 6 ? 'completed' : null }>
                 <td>{ FreightSituation[el.details.situation] }</td>
                 <td>{ `${el.details.origin.country} - ${el.details.origin.state} - ${el.details.origin.city}` }</td>
                 <td>{ `${el.details.destination.country} - ${el.details.destination.state} - ${el.details.destination.city}` }</td>

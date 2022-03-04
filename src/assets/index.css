@@ -140,6 +140,15 @@ table {
   width: 100%;
 }
 
+table .completed {
+  background-color: forestgreen;
+  color: white
+}
+
+table .completed:hover {
+  background-color: rgb(24, 93, 24);
+}
+
 table td, table th {
   border: 1px solid #ddd;
   padding: 8px;

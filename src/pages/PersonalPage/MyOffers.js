@@ -126,7 +126,11 @@ function MyOffers() {
             estipulated_value: ethers.utils.formatEther(freight_details[4].toString()),
             fine_delivery_late: ethers.utils.formatEther(freight_details[5].toString()),
             guarantee_value: ethers.utils.formatEther(freight_details[6].toString()),
-            flags: flags
+            flags: {
+                is_advance_taken: flags[0],
+                is_whole_money_taken: flags[1],
+                is_delivery_late_taken: flags[2]
+            }
         };
     
         return details;
@@ -192,9 +196,110 @@ function MyOffers() {
             }
         }
 
-        const stopLoad = async() => {}
-        const onCarriage = async() => {}
-        const deliverLoad = async() => {}
+        const takeAdvanceMoney = async(freight) => {
+            const { ethereum } = window;
+
+            try {
+                if (ethereum) {
+                    const provider = new ethers.providers.Web3Provider(ethereum);
+                    const signer = provider.getSigner();
+                    const freight1 = new ethers.Contract(freight.details.address, abiFreight, signer);
+
+                    // withdraw advance money
+                    await freight1.withdrawAdvanceMoney();
+
+                    // get freights updated
+                    setFreights([]);
+                    getFreights();
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        const stopLoad = async(freight) => {
+            const { ethereum } = window;
+
+            try {
+                if (ethereum) {
+                    const provider = new ethers.providers.Web3Provider(ethereum);
+                    const signer = provider.getSigner();
+                    const freight1 = new ethers.Contract(freight.details.address, abiFreight, signer);
+
+                    // stop carriage
+                    await freight1.stopCarriage();
+
+                    // get freights updated
+                    setFreights([]);
+                    getFreights();
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        const onCarriage = async(freight) => {
+            const { ethereum } = window;
+
+            try {
+                if (ethereum) {
+                    const provider = new ethers.providers.Web3Provider(ethereum);
+                    const signer = provider.getSigner();
+                    const freight1 = new ethers.Contract(freight.details.address, abiFreight, signer);
+
+                    // on carriage
+                    await freight1.onCarriage();
+
+                    // get freights updated
+                    setFreights([]);
+                    getFreights();
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        const deliverLoad = async(freight) => {
+            const { ethereum } = window;
+
+            try {
+                if (ethereum) {
+                    const provider = new ethers.providers.Web3Provider(ethereum);
+                    const signer = provider.getSigner();
+                    const freight1 = new ethers.Contract(freight.details.address, abiFreight, signer);
+
+                    // deliver the load
+                    await freight1.deliver();
+
+                    // get freights updated
+                    setFreights([]);
+                    getFreights();
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        const withdrawWholeMoney = async(freight) => {
+            const { ethereum } = window;
+
+            try {
+                if (ethereum) {
+                    const provider = new ethers.providers.Web3Provider(ethereum);
+                    const signer = provider.getSigner();
+                    const freight1 = new ethers.Contract(freight.details.address, abiFreight, signer);
+
+                    // deliver the load
+                    await freight1.withdrawWholeMoney();
+
+                    // get freights updated
+                    setFreights([]);
+                    getFreights();
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
 
         const getActionButtons = (freight) => {
             if (freight.winning_offer && freight.winning_offer.address.toLowerCase() === currentAccount.toLowerCase()) {
@@ -219,10 +324,15 @@ function MyOffers() {
                     case 3:
                         return (
                             <div className="flex">
-                                <span className='button orange' style={{ marginRight: '10px' }} onClick={stopLoad}>
+                                { !freight.details.flags.is_advance_taken ?
+                                    <span className='button orange' style={{ marginRight: '10px' }} onClick={() => takeAdvanceMoney(freight)}>
+                                        Take advance money ({ freight.winning_offer.advance_money }ETH)
+                                    </span> :
+                                ""}
+                                <span className='button orange' style={{ marginRight: '10px' }} onClick={() => stopLoad(freight)}>
                                     Stop
                                 </span>
-                                <span className='button orange' onClick={deliverLoad}>
+                                <span className='button orange' onClick={() => deliverLoad(freight)}>
                                     Deliver
                                 </span>
                             </div>
@@ -230,13 +340,20 @@ function MyOffers() {
                     
                     case 4:
                         return (
-                            <span className='button orange' onClick={onCarriage}>
+                            <span className='button orange' onClick={() => onCarriage(freight)}>
                                 On carriage
                             </span>
                         ); 
                     default:
                         return (
-                            <span>The load is not with you anymore</span>
+                            <div className="flexVertical">
+                                { !freight.details.flags.is_whole_money_taken ? 
+                                    <span className='button orange' onClick={() => withdrawWholeMoney(freight)}>
+                                        Withdraw whole money
+                                    </span> :
+                                ""}
+                                <span>The load is not with you anymore</span>
+                            </div>
                         );
                 }
             } else {
